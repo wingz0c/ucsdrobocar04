@@ -16,9 +16,11 @@ from docopt import docopt
 import numpy as np
 
 import donkeycar as dk
+from donkeycar.parts.controller import LocalWebController, JoystickController
+from donkeycar.parts.throttle_filter import ThrottleFilter
 from donkeycar.parts.datastore import TubHandler
 from donkeycar.parts.camera import Webcam
-from donkeycar.templates.newbruh import *
+#from donkeycar.templates.newbruh import *
 import time
 
 
@@ -111,7 +113,7 @@ class MyCVController:
         return pilot_throttle, pilot_angle, recording
 
 
-def drive(cfg):
+def drive(cfg, use_joystick=False):
     '''
     Construct a working robotic vehicle from many parts.
     Each part runs as a job in the Vehicle loop, calling either
@@ -127,7 +129,7 @@ def drive(cfg):
 
     # Camera            
     cam = Webcam(image_w=cfg.IMAGE_W, image_h=cfg.IMAGE_H, image_d=cfg.IMAGE_DEPTH)
-    V.add(cam, outputs=['cam/image_array'], threaded=threaded)
+    V.add(cam, outputs=['cam/image_array'], threaded=True)
 
     # Controller
     #V.add(MyCVController(),
