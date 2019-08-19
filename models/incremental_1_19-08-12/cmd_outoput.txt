@@ -1,0 +1,8 @@
+Epoch 00042: val_loss did not improve from 0.02514
+21/21 [==============================] - 29s 1s/step - loss: 0.0211 - n_outputs0_loss: 0.0197 - n_outputs1_loss: 0.0014 - val_loss: 0.0320 - val_n_outputs0_loss: 0.0307 - val_n_outputs1_loss: 0.0013
+Epoch 00042: early stopping
+Training completed in 0:19:24.
+
+
+----------- Best Eval Loss :0.025137 ---------
+

@@ -1,0 +1,8 @@
+Epoch 00025: val_loss improved from 0.00562 to 0.00555, saving model to models/ucsdrobocar04_48.h5
+26/26 [==============================] - 36s 1s/step - loss: 0.0081 - n_outputs0_loss: 7.3021e-04 - n_outputs1_loss: 0.0073 - val_loss: 0.0055 - val_n_outputs0_loss: 2.2879e-05 - val_n_outputs1_loss: 0.0055
+Epoch 00025: early stopping
+Training completed in 0:14:03.
+
+
+----------- Best Eval Loss :0.005549 ---------
+
