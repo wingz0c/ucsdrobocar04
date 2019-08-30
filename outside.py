@@ -30,8 +30,8 @@ from donkeycar.parts.actuator import PCA9685, PWMSteering, PWMThrottle
 # upper mask (170-180)
 #lower_red2 = np.array([170, 70, 70])
 #upper_red2 = np.array([180, 255, 255])
-lower_yellow = np.array([27,63,114])
-upper_yellow = np.array([37,110,152])
+lower_yellow = np.array([29,24,170])
+upper_yellow = np.array([36,255,255])
 class MyCVController:
     '''
     CV based controller
@@ -52,7 +52,13 @@ class MyCVController:
 
             frame = cv2.bitwise_and(frame, frame, mask=mask)
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            #blur = cv2.GaussianBlur(gray, (5, 5), 0)
+            blur = cv2.GaussianBlur(gray, (3, 3), 0)
+            
+            poly = [[0,40],[0,110],[160,110],[160,40]]
+            mask = np.zeros_like(blur)
+            cv2.fillPoly(mask,np.array([poly],'int32'),255)
+            mask=cv2.bitwise_and(blur,mask)
+            
             #ret, thresh = cv2.threshold(blur, 70, 255, cv2.THRESH_BINARY_INV)
             #contours, hierarchy = cv2.findContours(thresh.copy(), 1, cv2.CHAIN_APPROX_SIMPLE)
             contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -68,8 +74,8 @@ class MyCVController:
                     cx = 80
                 steering = (cx-80)/80.0 * 1.2
             
-                throttle = 0.3
-                recording = True
+            throttle = 0.35
+            recording = True
         print("steer , th = " ,steering, throttle)
         return steering, throttle, recording
 
@@ -143,6 +149,7 @@ if __name__ == '__main__':
 
     if args['drive']:
         drive(cfg)
+    """
     while True:
         # k = cv2.waitKey(0) & 0xFF
         k = input('input something!: ')
@@ -152,3 +159,4 @@ if __name__ == '__main__':
             self.throttle -= 0.05
         elif k == ord('p'):
             self.throttle = 0
+    """
