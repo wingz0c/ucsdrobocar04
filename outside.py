@@ -42,7 +42,7 @@ class MyCVController:
         throttle = 0
         recording = False
         frame = cam_img
-
+        outside = False
         if cam_img is not None:
             img_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
@@ -67,14 +67,19 @@ class MyCVController:
             if (len(contours) > 0):
                 c = contours[0]
                 print(cv2.contourArea(c))
+                if (cv2.contourArea(c) < 9.0):
+                    outside = True
                 M = cv2.moments(c)
                 try:
                     cx = int(M['m10'] / M['m00'])
                 except:
                     cx = 80
                 steering = (cx-80)/80.0 * 1.2
-            
-            throttle = 0.35
+            else:
+                outside = True
+            if (outside):
+                steering = 0.7
+            throttle = 0.2
             recording = True
         print("steer , th = " ,steering, throttle)
         return steering, throttle, recording

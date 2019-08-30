@@ -3,12 +3,11 @@
 
 # In[ ]:
 
-
+import cv2
 def detectcircle(image_name):
     '''input string--name of the image
        output 1. center of the circle coordinate (array) 2.the RGB value of the center pixel
     '''
-    import cv2
     import numpy as np
     import matplotlib.pyplot as plt
     from PIL import Image
@@ -44,4 +43,11 @@ def detectcircle(image_name):
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
     return [x,y],RGB
+
+if __name__ == "__main__":
+    vid = cv2.VideoCapture(0)
+    while (1):
+        success, img = vid.read()
+        detectcircle(img)
+        print ("x,y,RGB", [x,y], RGB)
 
