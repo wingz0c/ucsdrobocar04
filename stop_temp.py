@@ -14,14 +14,16 @@ import time
 
 from docopt import docopt
 import numpy as np
-
+import cv2
 import donkeycar as dk
 from donkeycar.parts.datastore import TubHandler
-from donkeycar.parts.camera import PiCamera
-from donkeycar.templates.newbruh import *
+from donkeycar.parts.camera import Webcam
+#from donkeycar.templates.newbruh import *
 import time
 
-
+def steeringboi(x):
+    y = x/80.0-1.0
+    return y 
 
 class MyCVController:
     '''
@@ -30,6 +32,7 @@ class MyCVController:
     pastSpeed = 0
     pastSteer = 0
     maxContour = 0
+
     def run(self, cam_img):
         # do image processing here. output variables steering and throttle to control vehicle.
         if cam_img is None:
@@ -37,8 +40,8 @@ class MyCVController:
 
         image_copy = cam_img
 
-        lower_orange = np.array([30, 138, 85])
-        upper_orange = np.array([30, 201, 159])
+        lower_orange = np.array([30, 100, 100])
+        upper_orange = np.array([30, 255, 255])
         hsv = cv2.cvtColor(cam_img, cv2.COLOR_RGB2HSV)
         mask = cv2.inRange(hsv, lower_orange, upper_orange)
         """
@@ -52,9 +55,9 @@ class MyCVController:
         gray_mask = cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
         blur_mask = cv2.GaussianBlur(gray_mask, (5, 5), 0)
         ret, thresh = cv2.threshold(blur_mask, 70, 255, 0)
-        thresh2, contours, hierarchy = cv2.findContours(thresh, 1, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours.sort(key=cv2.contourArea, reverse=True)
-
+        
         if len(contours) > 1:
             M = cv2.moments(contours[1])
             if cv2.contourArea(contours[0]) > self.maxContour:
@@ -69,7 +72,8 @@ class MyCVController:
 
         # do image processing here. output variables steering and throttle to control vehicle.
         steering = steeringboi(cX)  # from zero to one
-        throttle = 0.3  # from -1 to 1
+        print(cX)
+        throttle = 0.4  # from -1 to 1
         recording = True  # Set to true if desired to save camera frames
         cv2.imwrite('original.jpg',image_copy)
         """
@@ -90,9 +94,11 @@ class MyCVController:
         blur_mask = cv2.GaussianBlur(gray_mask, (5, 5), 0)
         ret, thresh = cv2.threshold(blur_mask, 40, 255, 0)
         cv2.imwrite('threshold.jpg',thresh)
-        thresh2, contours, hierarchy = cv2.findContours(thresh, 1, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(thresh, 1, cv2.CHAIN_APPROX_SIMPLE)
         contours.sort(key=cv2.contourArea, reverse=True)
-        cv2.imwrite('contours.jpg',thresh2)
+        im2 = thresh
+        cv2.drawContours(im2, contours, 0 ,(0,255,0),2)
+        cv2.imwrite('contours.jpg',im2)
 
         if len(contours) >= 1:
             M = cv2.moments(contours[0])
@@ -109,6 +115,7 @@ class MyCVController:
         self.pastSpeed = throttle
         self.pastSteer = steering
         print(self.maxContour)
+        print("max")
         return steering, throttle, recording
 
 

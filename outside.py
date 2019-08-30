@@ -45,7 +45,7 @@ class MyCVController:
 
         if cam_img is not None:
             img_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
-            mask = cv2.inRange(img_hsv, lower_yeelow, upper_yellow)
+            mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
             #mask0 = cv2.inRange(img_hsv, lower_red1, upper_red1)
             #mask1 = cv2.inRange(img_hsv, lower_red2, upper_red2)
             # = mask0 + mask1
@@ -68,9 +68,9 @@ class MyCVController:
                     cx = 80
                 steering = (cx-80)/80.0 * 1.2
             
-                throttle = 0.2
+                throttle = 0.3
                 recording = True
-        print("steer =" + steering)
+        print("steer , th = " ,steering, throttle)
         return steering, throttle, recording
 
 
@@ -90,7 +90,7 @@ def drive(cfg):
 
     # Camera
     cam = Webcam(image_w=cfg.IMAGE_W, image_h=cfg.IMAGE_H, image_d=cfg.IMAGE_DEPTH)
-    V.add(camera, outputs=['cam/image_array'], threaded=True)
+    V.add(cam, outputs=['cam/image_array'], threaded=True)
 
     # Controller
     V.add(MyCVController(),
