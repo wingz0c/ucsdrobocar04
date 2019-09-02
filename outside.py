@@ -79,7 +79,7 @@ class MyCVController:
                 outside = True
             if (outside):
                 steering = 0.7
-            throttle = 0.2
+            throttle = 0.3
             recording = True
         print("steer , th = " ,steering, throttle)
         return steering, throttle, recording
