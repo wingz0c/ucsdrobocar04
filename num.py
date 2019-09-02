@@ -66,7 +66,7 @@ def decode_predictions(scores, geometry):
     # return a tuple of the bounding boxes and associated confidences
     return (rects, confidences)
 
-def MainTextRecognition():
+def MainTextRecognition(image):
     # Hard coding values for UCSD Run #
     eastModel = 'frozen_east_text_detection.pb'
     imgW = 320
@@ -76,7 +76,7 @@ def MainTextRecognition():
     ####################################
 
     # load the input image and grab the image dimensions
-    image = cv2.imread(img)
+    #image = cv2.imread(img)
     orig = image.copy()
     (origH, origW) = image.shape[:2]
 
@@ -165,7 +165,7 @@ def MainTextRecognition():
 
     return (text)
 
-img = 'THREE.jpg'
+#img = 'THREE.jpg'
 
-(Str) = MainTextRecognition()
-print("Text detected is: ", Str)
+#(Str) = MainTextRecognition()
+#print("Text detected is: ", Str)

@@ -96,6 +96,7 @@ class MyCVController:
                 #if (cv2.contourArea(cb) > 150.0):
                 #read.RemoveLocation('1')
                 #print("blueArea =", cv2.contourArea(cb))
+                print("see one")
                 stop_b=False
                 counter = 0
                 steering = throttle = 0
@@ -107,6 +108,7 @@ class MyCVController:
                 #if (cv2.contourArea(cr) > 150.0):
                 #read.RemoveLocation('2')
                 #print("redArea =", cv2.contourArea(cr))
+                print("see two")
                 stop_r=False
                 counter = 0
                 steering = throttle = 0
@@ -123,7 +125,7 @@ class MyCVController:
                 print("trackArea = " ,cv2.contourArea(c))
                 stop = 0
                 counter += 1
-                if (counter>200):
+                if (counter>2):
                     stop_r = True
                     stop_b = True
                     #stop_r = read.CheckLocation('2')
@@ -143,7 +145,7 @@ class MyCVController:
                 steering = (cx-80)/80.0 * 1.2
             else:
                 outside = True
-            throttle = 0.34
+            throttle = 0.35
             if (outside):
                 steering = 0.68
             #recording = True
