@@ -14,6 +14,7 @@ import time
 import numpy as np
 import cv2
 import threading
+from circle import detectcircle
 
 #from picamera.array import PiRGBArray
 from donkeycar.parts.camera import Webcam
@@ -43,7 +44,12 @@ class MyCVController:
         recording = False
         frame = cam_img
         outside = False
+        
+
         if cam_img is not None:
+            #[x,y] ,RGB = detectcircle(cam_img)
+            #print("[x,y], RGB = ",[x,y], RGB)
+            
             img_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
             #mask0 = cv2.inRange(img_hsv, lower_red1, upper_red1)
@@ -79,9 +85,9 @@ class MyCVController:
                 outside = True
             if (outside):
                 steering = 0.7
-            throttle = 0.3
+            throttle = 0.4
             recording = True
-        print("steer , th = " ,steering, throttle)
+        print("steer , throttle = " ,steering, throttle)
         return steering, throttle, recording
 
 
