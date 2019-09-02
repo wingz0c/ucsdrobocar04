@@ -7,7 +7,7 @@ def ConnectToMySQL_Manage (TableName, StrToMySQL) :
     while tries > 0 :
         tries -= 1
         try : 
-            connection = mysql.connector.connect(host='localhost', database=DataBase, user = 'manage_process', password='team4ucsd')
+            connection = mysql.connector.connect(host='192.168.33.27', database=DataBase, user = 'manage_process', password='team4ucsd')
         except mysql.connector.errors.ProgrammingError:
             if tries == 0:
                 print ("Failed to connect even after retrying " + str(tries) + " times")
@@ -38,10 +38,10 @@ def CheckLocation(location) :
     tableName = 'VehicleMode'
     strToMySQL = "SELECT Active FROM VehicleMode WHERE ModeType = \'School Bus\';"
     retn = ConnectToMySQL_Manage (tableName, strToMySQL)
-    msg = "No msg"
+    #msg = "No msg"
     print(retn)
     if 'Y' in retn[0][0] :
-        print ("Stop at all stops")
+        #print ("Stop at all stops")
         msg = True
         return msg
 
@@ -67,7 +67,7 @@ def RemoveLocation(location) :
     if retn == []:
         print ("Nothing to remove in database")
     else :
-        print ("Erasing entry")
+        #print ("Erasing entry")
         for entry in retn :
             if entry[1] == location :
                 newStartDest = 'NULL'

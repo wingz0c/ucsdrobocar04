@@ -15,7 +15,7 @@ import numpy as np
 import cv2
 import threading
 import read
-
+import num
 #from picamera.array import PiRGBArray
 from donkeycar.parts.camera import Webcam
 from docopt import docopt
@@ -48,13 +48,16 @@ class MyCVController:
             
             img_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
+            '''
             mask_b = cv2.inRange(img_hsv, lower_blue, upper_blue)
             mask_r = cv2.inRange(img_hsv, lower_red, upper_red)
             # = mask0 + mask1
-
+            '''
             frame = cv2.bitwise_and(frame, frame, mask=mask)
+            '''
             frame_b = cv2.bitwise_and(frame, frame, mask=mask_b)
             frame_r = cv2.bitwise_and(frame, frame, mask=mask_r)
+            '''
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             #frame_b = cv2.cvtColor(frame_b, cv2.COLOR_BGR2GRAY)
             #frame_r = cv2.cvtColor(frame_r, cv2.COLOR_BGR2GRAY)
@@ -75,36 +78,40 @@ class MyCVController:
             #mask_r=cv2.bitwise_and(frame_r,mask_r)
 
             contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            '''
             contours_b, hierarchy_b = cv2.findContours(mask_b, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
             contours_r, hierarchy_r = cv2.findContours(mask_r, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-
+            '''
             contours.sort(key=cv2.contourArea, reverse=True)
+            '''
             contours_b.sort(key=cv2.contourArea, reverse=True)
             contours_r.sort(key=cv2.contourArea, reverse=True)
-            
-            print("Red, Blue, stop" ,stop_r, stop_b, stop)
+            '''
+            #print("Red, Blue, stop" ,stop_r, stop_b, stop)
+            no = num.MainTextRecognition(cam_img)
+            print("NUM is = ", no)
 
-            if (len(contours_b) > 0 and stop_b is True):
-                cb = contours_b[0]
-                if (cv2.contourArea(cb) > 150.0):
-                    read.RemoveLocation('B')
-                    print("blueArea =", cv2.contourArea(cb))
-                    stop_b=False
-                    counter = 0
-                    steering = throttle = 0
-                    stop = 1
-                    return steering, throttle, recording
+            if(no == 1 and stop_b is True):
+                #cb = contours_b[0]
+                #if (cv2.contourArea(cb) > 150.0):
+                #read.RemoveLocation('1')
+                #print("blueArea =", cv2.contourArea(cb))
+                stop_b=False
+                counter = 0
+                steering = throttle = 0
+                stop = 1
+                return steering, throttle, recording
             
-            if (len(contours_r) > 0 and stop_r is True):
-                cr = contours_r[0]
-                if (cv2.contourArea(cr) > 150.0):
-                    read.RemoveLocation('R')
-                    print("redArea =", cv2.contourArea(cr))
-                    stop_r=False
-                    counter = 0
-                    steering = throttle = 0
-                    stop = 1
-                    return steering, throttle, recording
+            if (no == 2 and stop_r is True):
+                #cr = contours_r[0]
+                #if (cv2.contourArea(cr) > 150.0):
+                #read.RemoveLocation('2')
+                #print("redArea =", cv2.contourArea(cr))
+                stop_r=False
+                counter = 0
+                steering = throttle = 0
+                stop = 1
+                return steering, throttle, recording
             
             if (stop):
                 time.sleep(3)
@@ -117,10 +124,10 @@ class MyCVController:
                 stop = 0
                 counter += 1
                 if (counter>200):
-                    #stop_r = True
-                    #stop_b = True
-                    stop_r = read.CheckLocation('R')
-                    stop_b = read.CheckLocation('B')
+                    stop_r = True
+                    stop_b = True
+                    #stop_r = read.CheckLocation('2')
+                    #stop_b = read.CheckLocation('1')
                     counter = 0
                 
                 if (cv2.contourArea(c) < 12.0):
