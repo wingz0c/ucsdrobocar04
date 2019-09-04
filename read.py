@@ -1,12 +1,13 @@
-import mysql.connector
+iimport mysql.connector
 import time
 
 def ConnectToMySQL_Manage (TableName, StrToMySQL) :
     tries = 10
+    DataBase = 'UCSDrobocar04_' + TableName
     while tries > 0 :
         tries -= 1
         try : 
-            connection = mysql.connector.connect(host='localhost', database='UCSDrobocar04_TransferRequest', user = 'manage_process', password='team4ucsd')
+            connection = mysql.connector.connect(host='localhost', database=DataBase, user = 'manage_process', password='team4ucsd')
         except mysql.connector.errors.ProgrammingError:
             if tries == 0:
                 print ("Failed to connect even after retrying " + str(tries) + " times")
@@ -17,7 +18,7 @@ def ConnectToMySQL_Manage (TableName, StrToMySQL) :
         else :
             break
     cursor = connection.cursor()
-    cursor.execute('USE UCSDrobocar04_TransferRequest;')
+    cursor.execute('USE ' + DataBase+ ';')
     cursor.execute(StrToMySQL)
     record = "Nothing"
     if 'REPLACE' in StrToMySQL : 
@@ -27,50 +28,70 @@ def ConnectToMySQL_Manage (TableName, StrToMySQL) :
         record = cursor.fetchall()
     else : 
         record = cursor.fetchall()
-    print("Done!! closing MySQL Connection")
+    #print("Done!! closing MySQL Connection")
     cursor.close()
     connection.close()
     return record
 
+def CheckLocation(location) :
 
-print('Establishing test connection to see if DB is usable by server_process')
-
-tableName = 'TransferRequest'
-strToMySQL = 'SELECT * FROM TransferRequest;'
-print(strToMySQL)
-retn = ConnectToMySQL_Manage (tableName, strToMySQL)
-print (retn)
-
-
-command = (input("Please Enter Start/End Destination in Px form that you would like to find: ")).rstrip()
-strToMySQL = "SELECT * FROM TransferRequest WHERE (StartLocation = \'" + command + "\' OR EndLocation = \'" + command + "\');"
-print(strToMySQL)
-retn = ConnectToMySQL_Manage (tableName, strToMySQL)
-print ("SQL Query returned: " + str(retn))
-if retn == [] : 
-    print ("No need to stop")
-else :
+    tableName = 'VehicleMode'
+    strToMySQL = "SELECT Active FROM VehicleMode WHERE ModeType = \'School Bus\';"
+    retn = ConnectToMySQL_Manage (tableName, strToMySQL)
+    msg = "No msg"
     print(retn)
-    print ("Location found, please stop")
+    if 'Y' in retn[0][0] :
+        print ("Stop at all stops")
+        msg = True
+        return msg
 
+    tableName = 'TransferRequest'
+    strToMySQL = "SELECT * FROM TransferRequest WHERE (StartLocation = \'" + location + "\' OR (StartLocation IS NULL AND EndLocation = \'" + location + "\'));"
+    #print(strToMySQL)
+    retn = ConnectToMySQL_Manage (tableName, strToMySQL)
 
-if retn is not []:
-    print ("Erasing entry")
-    for entry in retn :
-        if entry[1] == command :
-            newStartDest = 'NULL'
-        else :
-            if entry[1] is not None :
-                newStartDest = "\'" + entry[1] + "\'"
-            else : 
+    #print ("SQL Query returned: " + str(retn))
+    if retn == [] :
+        msg = False
+    else :
+        #print(retn)
+        msg = True
+    return msg
+
+def RemoveLocation(location) :
+
+    tableName = 'TransferRequest'
+    strToMySQL = "SELECT * FROM TransferRequest WHERE (StartLocation = \'" + location + "\' OR (StartLocation IS NULL AND EndLocation = \'" + location + "\'));"
+    retn = ConnectToMySQL_Manage (tableName, strToMySQL)
+
+    if retn == []:
+        print ("Nothing to remove in database")
+    else :
+        print ("Erasing entry")
+        for entry in retn :
+            if entry[1] == location :
                 newStartDest = 'NULL'
+            else :
+                if entry[1] is not None :
+                    newStartDest = "\'" + entry[1] + "\'"
+                else : 
+                    newStartDest = 'NULL'
 
-        if entry[2] == command and entry[1] is None:
-            newEndDest = 'NULL'
-        else :
-            newEndDest =  "\'" + entry[2] + "\'"
+            if entry[2] == location and entry[1] is None:
+                newEndDest = 'NULL'
+            else :
+                newEndDest =  "\'" + entry[2] + "\'"
 
-        print("New Tuple:" + entry[0] + ' ' + newStartDest + ' ' + newEndDest + ' ')
-        strToMySQL = "REPLACE INTO TransferRequest VALUES (\'" + entry[0] + "\'," + newStartDest + "," + newEndDest + ");"
-        print (strToMySQL)
-        retn = ConnectToMySQL_Manage (tableName, strToMySQL)
+            #print("New Tuple:" + entry[0] + ' ' + newStartDest + ' ' + newEndDest + ' ')
+            strToMySQL = "REPLACE INTO TransferRequest VALUES (\'" + entry[0] + "\'," + newStartDest + "," + newEndDest + ");"
+            #print (strToMySQL)
+            retn = ConnectToMySQL_Manage (tableName, strToMySQL)
+
+
+Mymsg = CheckLocation('R')
+if Mymsg is True :
+    print ("Stop")
+else :
+    print ("Dont Stop")
+
+RemoveLocation('R')
