@@ -24,6 +24,9 @@ import donkeycar as dk
 from donkeycar.parts.datastore import TubHandler
 from donkeycar.parts.actuator import PCA9685, PWMSteering, PWMThrottle
 
+counter = stop = 0
+stop_r = stop_b =True
+
 class MyCVController:
     '''
     CV based controller
@@ -33,47 +36,43 @@ class MyCVController:
         lower_red = np.array([0, 114, 141])
         upper_red = np.array([19, 255, 255])
         lower_blue = np.array([103, 96, 132])
-        upper_blue = np.array([179, 255, 255])
+        upper_blue = np.array([118, 255, 255])
         lower_yellow = np.array([29,24,170])
         upper_yellow = np.array([36,255,255])
-
-        steering = 0
-        throttle = 0
-        recording = False
+        outside = recording = False
         frame = cam_img
-        outside = False
-        stop_b = True
-        stop_r = True
+        global counter, stop_r, stop_b, stop
+        steering = throttle = 0
 
         if cam_img is not None:
             
             img_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
-            mask_b = cv2.inRange(img_hsv, lower_red, upper_red)
-            mask_r = cv2.inRange(img_hsv, lower_blue, upper_blue)
+            mask_b = cv2.inRange(img_hsv, lower_blue, upper_blue)
+            mask_r = cv2.inRange(img_hsv, lower_red, upper_red)
             # = mask0 + mask1
 
             frame = cv2.bitwise_and(frame, frame, mask=mask)
             frame_b = cv2.bitwise_and(frame, frame, mask=mask_b)
             frame_r = cv2.bitwise_and(frame, frame, mask=mask_r)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frame_b = cv2.cvtColor(frame_b, cv2.COLOR_BGR2GRAY)
-            frame_r = cv2.cvtColor(frame_r, cv2.COLOR_BGR2GRAY)
+            #frame_b = cv2.cvtColor(frame_b, cv2.COLOR_BGR2GRAY)
+            #frame_r = cv2.cvtColor(frame_r, cv2.COLOR_BGR2GRAY)
             frame = cv2.GaussianBlur(frame, (3, 3), 0)
-            frame_b = cv2.GaussianBlur(frame_b, (3, 3), 0)
-            frame_r = cv2.GaussianBlur(frame_r, (3, 3), 0)
+            #frame_b = cv2.GaussianBlur(frame_b, (3, 3), 0)
+            #frame_r = cv2.GaussianBlur(frame_r, (3, 3), 0)
 
             
             poly = [[0,40],[0,110],[160,110],[160,40]]
             mask = np.zeros_like(frame)
-            mask_b = np.zero_like(frame_b)
-            mask_r = np.zero_like(frame_r)
+            #mask_b = np.zeros_like(frame_b)
+            #mask_r = np.zeros_like(frame_r)
             cv2.fillPoly(mask,np.array([poly],'int32'),255)
-            cv2.fillPoly(mask_r,np.array([poly],'int32'),255)
-            cv2.fillPoly(mask_b,np.array([poly],'int32'),255)
+            #cv2.fillPoly(mask_r,np.array([poly],'int32'),255)
+            #cv2.fillPoly(mask_b,np.array([poly],'int32'),255)
             mask=cv2.bitwise_and(frame,mask)
-            mask_b=cv2.bitwise_and(frame_b,mask_b)
-            mask_r=cv2.bitwise_and(frame_r,mask_r)
+            #mask_b=cv2.bitwise_and(frame_b,mask_b)
+            #mask_r=cv2.bitwise_and(frame_r,mask_r)
 
             contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
             contours_b, hierarchy_b = cv2.findContours(mask_b, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -82,21 +81,49 @@ class MyCVController:
             contours.sort(key=cv2.contourArea, reverse=True)
             contours_b.sort(key=cv2.contourArea, reverse=True)
             contours_r.sort(key=cv2.contourArea, reverse=True)
+            
+            print("Red, Blue, stop" ,stop_r, stop_b, stop)
+
             if (len(contours_b) > 0 and stop_b is True):
                 cb = contours_b[0]
-                if (cv2.countourArea(cb) > 10.0):
-                    throttle = 0
-                    print("blue", cv2.countourArea(cb))
-            elif (len(contours_b) > 0 and stop_r is True):
+                if (cv2.contourArea(cb) > 50.0):
+                    print("blueArea =", cv2.contourArea(cb))
+                    stop_b=False
+                    counter = 0
+                    steering = throttle = 0
+                    stop = 1
+                    return steering, throttle, recording
+            
+            if (len(contours_r) > 0 and stop_r is True):
                 cr = contours_r[0]
-                if (cv2.countourArea(cr) > 10.0):
-                    throttle = 0
-                    print("red", cv2.countourArea(cr))
-            elif (len(contours) > 0):
+                if (cv2.contourArea(cr) > 50.0):
+                    print("redArea =", cv2.contourArea(cr))
+                    stop_r=False
+                    counter = 0
+                    steering = throttle = 0
+                    stop = 1
+                    return steering, throttle, recording
+            
+            if (stop):
+                time.sleep(3)
+                #for i in range(0,100000):
+                    #print(i,throttle)
+            
+            if (len(contours) > 0):
                 c = contours[0]
-                print(cv2.contourArea(c))
-                if (cv2.contourArea(c) < 9.0):
+                print("trackArea = " ,cv2.contourArea(c))
+                stop = 0
+                counter += 1
+                if (counter>200):
+                    stop_r = True
+                    stop_b = True
+                    counter = 0
+                
+                if (cv2.contourArea(c) < 12.0):
                     outside = True
+                else:
+                    outside = False
+                    counter += 1
                 M = cv2.moments(c)
                 try:
                     cx = int(M['m10'] / M['m00'])
@@ -105,13 +132,14 @@ class MyCVController:
                 steering = (cx-80)/80.0 * 1.2
             else:
                 outside = True
+            throttle = 0.35
             if (outside):
                 steering = 0.7
-            throttle = 0.2
-            recording = True
-        print("steer , throttle = " ,steering, throttle)
-        return steering, throttle, recording
+            #recording = True
 
+        print("steer , throttle, count = " ,steering, throttle, counter)
+        return steering, throttle, recording
+        
 
 def drive(cfg):
     '''
@@ -123,6 +151,8 @@ def drive(cfg):
     Parts may have named outputs and inputs. The framework handles passing named outputs
     to parts requesting the same named input.
     '''
+    
+    #global steering, throttle
 
     # Initialize car
     V = dk.vehicle.Vehicle()
