@@ -1,4 +1,4 @@
-iimport mysql.connector
+import mysql.connector
 import time
 
 def ConnectToMySQL_Manage (TableName, StrToMySQL) :
@@ -7,11 +7,7 @@ def ConnectToMySQL_Manage (TableName, StrToMySQL) :
     while tries > 0 :
         tries -= 1
         try : 
-<<<<<<< HEAD
             connection = mysql.connector.connect(host='localhost', database=DataBase, user = 'manage_process', password='team4ucsd')
-=======
-            connection = mysql.connector.connect(host='192.168.33.27', database='UCSDrobocar04_TransferRequest', user = 'manage_process', password='team4ucsd')
->>>>>>> cc50e556e88cc0ff9cfafb12df497286b90a40c8
         except mysql.connector.errors.ProgrammingError:
             if tries == 0:
                 print ("Failed to connect even after retrying " + str(tries) + " times")
@@ -98,11 +94,4 @@ if Mymsg is True :
 else :
     print ("Dont Stop")
 
-<<<<<<< HEAD
 RemoveLocation('R')
-=======
-        print("New Tuple:" + entry[0] + ' ' + newStartDest + ' ' + newEndDest + ' ')
-        strToMySQL = "REPLACE INTO TransferRequest VALUES (\'" + entry[0] + "\'," + newStartDest + "," + newEndDest + ");"
-        print (strToMySQL)
-        retn = ConnectToMySQL_Manage (tableName, strToMySQL)
->>>>>>> cc50e556e88cc0ff9cfafb12df497286b90a40c8
